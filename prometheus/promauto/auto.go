@@ -221,3 +221,155 @@ func NewHistogramVec(opts prometheus.HistogramOpts, labelNames []string) *promet
 	prometheus.MustRegister(h)
 	return h
 }
+
+// Factory provides factory methods to create Collectors that are automatically
+// registered with a Registerer. Create a Factory with the With function,
+// providing a Registerer to register created Collectors with. The zero value of
+// a Factory creates Collectors that are not registered with any
+// Registerer. Each method of the Factory panics if the registration fails.
+type Factory struct {
+	r prometheus.Registerer
+}
+
+// With creates a Factory using the provided Registerer for registration of the
+// created Collectors. With enables two usage pattern. It can be called once per line:
+//        var (
+//        	reg           = prometheus.NewRegistry()
+//        	randomNumbers = promauto.With(reg).NewHistogram(prometheus.HistogramOpts{
+//        		Name:    "random_numbers",
+//        		Help:    "A histogram of normally distributed random numbers.",
+//        		Buckets: prometheus.LinearBuckets(-3, .1, 61),
+//        	})
+//        	requestCount = promauto.With(reg).NewCounterVec(
+//        		prometheus.CounterOpts{
+//        			Name: "http_requests_total",
+//        			Help: "Total number of HTTP requests by status code end method.",
+//        		},
+//        		[]string{"code", "method"},
+//        	)
+//        )
+// Or it can be used to create a Factory once to be used multiple times:
+//        var (
+//        	reg           = prometheus.NewRegistry()
+//        	factory       = promauto.With(reg)
+//        	randomNumbers = factory.NewHistogram(prometheus.HistogramOpts{
+//        		Name:    "random_numbers",
+//        		Help:    "A histogram of normally distributed random numbers.",
+//        		Buckets: prometheus.LinearBuckets(-3, .1, 61),
+//        	})
+//        	requestCount = factory.NewCounterVec(
+//        		prometheus.CounterOpts{
+//        			Name: "http_requests_total",
+//        			Help: "Total number of HTTP requests by status code end method.",
+//        		},
+//        		[]string{"code", "method"},
+//        	)
+//        )
+func With(r prometheus.Registerer) Factory { return Factory{r} }
+
+// NewCounter works like the function of the same name in the prometheus package
+// but it automatically registers the Counter with the Factory's Registerer.
+func (f Factory) NewCounter(opts prometheus.CounterOpts) prometheus.Counter {
+	c := prometheus.NewCounter(opts)
+	if f.r != nil {
+		f.r.MustRegister(c)
+	}
+	return c
+}
+
+// NewCounterVec works like the function of the same name in the prometheus
+// package but it automatically registers the CounterVec with the Factory's
+// Registerer.
+func (f Factory) NewCounterVec(opts prometheus.CounterOpts, labelNames []string) *prometheus.CounterVec {
+	c := prometheus.NewCounterVec(opts, labelNames)
+	if f.r != nil {
+		f.r.MustRegister(c)
+	}
+	return c
+}
+
+// NewCounterFunc works like the function of the same name in the prometheus
+// package but it automatically registers the CounterFunc with the Factory's
+// Registerer.
+func (f Factory) NewCounterFunc(opts prometheus.CounterOpts, function func() float64) prometheus.CounterFunc {
+	c := prometheus.NewCounterFunc(opts, function)
+	if f.r != nil {
+		f.r.MustRegister(c)
+	}
+	return c
+}
+
+// NewGauge works like the function of the same name in the prometheus package
+// but it automatically registers the Gauge with the Factory's Registerer.
+func (f Factory) NewGauge(opts prometheus.GaugeOpts) prometheus.Gauge {
+	g := prometheus.NewGauge(opts)
+	if f.r != nil {
+		f.r.MustRegister(g)
+	}
+	return g
+}
+
+// NewGaugeVec works like the function of the same name in the prometheus
+// package but it automatically registers the GaugeVec with the Factory's
+// Registerer.
+func (f Factory) NewGaugeVec(opts prometheus.GaugeOpts, labelNames []string) *prometheus.GaugeVec {
+	g := prometheus.NewGaugeVec(opts, labelNames)
+	if f.r != nil {
+		f.r.MustRegister(g)
+	}
+	return g
+}
+
+// NewGaugeFunc works like the function of the same name in the prometheus
+// package but it automatically registers the GaugeFunc with the Factory's
+// Registerer.
+func (f Factory) NewGaugeFunc(opts prometheus.GaugeOpts, function func() float64) prometheus.GaugeFunc {
+	g := prometheus.NewGaugeFunc(opts, function)
+	if f.r != nil {
+		f.r.MustRegister(g)
+	}
+	return g
+}
+
+// NewSummary works like the function of the same name in the prometheus package
+// but it automatically registers the Summary with the Factory's Registerer.
+func (f Factory) NewSummary(opts prometheus.SummaryOpts) prometheus.Summary {
+	s := prometheus.NewSummary(opts)
+	if f.r != nil {
+		f.r.MustRegister(s)
+	}
+	return s
+}
+
+// NewSummaryVec works like the function of the same name in the prometheus
+// package but it automatically registers the SummaryVec with the Factory's
+// Registerer.
+func (f Factory) NewSummaryVec(opts prometheus.SummaryOpts, labelNames []string) *prometheus.SummaryVec {
+	s := prometheus.NewSummaryVec(opts, labelNames)
+	if f.r != nil {
+		f.r.MustRegister(s)
+	}
+	return s
+}
+
+// NewHistogram works like the function of the same name in the prometheus
+// package but it automatically registers the Histogram with the Factory's
+// Registerer.
+func (f Factory) NewHistogram(opts prometheus.HistogramOpts) prometheus.Histogram {
+	h := prometheus.NewHistogram(opts)
+	if f.r != nil {
+		f.r.MustRegister(h)
+	}
+	return h
+}
+
+// NewHistogramVec works like the function of the same name in the prometheus
+// package but it automatically registers the HistogramVec with the Factory's
+// Registerer.
+func (f Factory) NewHistogramVec(opts prometheus.HistogramOpts, labelNames []string) *prometheus.HistogramVec {
+	h := prometheus.NewHistogramVec(opts, labelNames)
+	if f.r != nil {
+		f.r.MustRegister(h)
+	}
+	return h
+}
